@@ -1,0 +1,10 @@
+{
+    "status": 0,
+    "accessToken": "string",
+    "expires": "2022-03-03T13:40:14.413Z",
+    "user": {
+      "id": 0,
+      "username": "string",
+      "role": "string"
+    }
+}
