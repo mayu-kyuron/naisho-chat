@@ -1,10 +1,12 @@
-import { Body, Controller, Get, ParseArrayPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, ParseArrayPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { FoundRoomDto } from './dto/found-room.dto';
 
 @Controller('rooms')
+@UseGuards(JwtAuthGuard)
 export class RoomsController {
   constructor(private roomsService: RoomsService) {}
 
