@@ -1,0 +1,12 @@
+{
+    "userRooms": {
+        "prefix": "user:",
+        "userId": 0,
+        "suffix": ":rooms"
+    },
+    "roomUsers": {
+        "prefix": "room:",
+        "roomId": 0,
+        "suffix": ":users"
+    }
+}

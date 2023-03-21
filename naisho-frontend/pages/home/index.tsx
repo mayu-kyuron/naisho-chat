@@ -24,18 +24,11 @@ const Home = (props: Props) => {
 
   useEffect(() => {
     const fetchRooms = async () => {
-      const roomIds: number[] = [1, 2]; // TODO 仮に、固定のルームIDを設定中
-
-      const body = {
-        ids: roomIds,
-      };
-
       try {
         // トークルーム取得API呼出し
         const rooms: Room[] = await fetchJson("/api/rooms", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
         });
 
         setRooms(rooms);
@@ -98,7 +91,7 @@ const Home = (props: Props) => {
             </header>
           </>
         )}
-        <h2>Home</h2>
+        <h2>トーク</h2>
         <div>
           <ul>
             {

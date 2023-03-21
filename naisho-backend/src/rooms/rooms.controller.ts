@@ -1,4 +1,4 @@
-import { Body, Controller, Get, ParseArrayPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, ParseArrayPipe, Post, Query, UseGuards, Request } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RoomsService } from './rooms.service';
@@ -21,6 +21,20 @@ export class RoomsController {
     return {
       status: 1,
       room: resultDto,
+    };
+  }
+
+  @Get()
+  async findByUser(@Request() req): Promise<{
+    status: number;
+    rooms: FoundRoomDto[];
+  }> {
+    const rooms = await this.roomsService.findByUserId(req.user.id);
+    const resultDtos = plainToInstance(FoundRoomDto, rooms);
+
+    return {
+      status: 1,
+      rooms: resultDtos,
     };
   }
 
