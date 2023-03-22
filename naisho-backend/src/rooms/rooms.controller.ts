@@ -1,12 +1,10 @@
-import { Body, Controller, Get, ParseArrayPipe, Post, Query, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Get, ParseArrayPipe, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { FoundRoomDto } from './dto/found-room.dto';
 
 @Controller('rooms')
-@UseGuards(JwtAuthGuard)
 export class RoomsController {
   constructor(private roomsService: RoomsService) {}
 
@@ -24,12 +22,15 @@ export class RoomsController {
     };
   }
 
-  @Get()
-  async findByUser(@Request() req): Promise<{
+  @Get('user')
+  async findByUser(
+    @Query('id', ParseIntPipe)
+    userId: number,
+  ): Promise<{
     status: number;
     rooms: FoundRoomDto[];
   }> {
-    const rooms = await this.roomsService.findByUserId(req.user.id);
+    const rooms = await this.roomsService.findByUserId(userId);
     const resultDtos = plainToInstance(FoundRoomDto, rooms);
 
     return {

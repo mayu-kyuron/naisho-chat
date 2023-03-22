@@ -11,16 +11,20 @@ import fetchJson, { FetchError } from "../../lib/fetchJson";
 import useUser from "../../lib/useUser";
 import { User } from "../api/user";
 import { Room } from "../../entities/room.entity";
+import { Message } from "../../entities/message.entity";
 
 type Props = {
   user?: User;
 };
 
-const Home = (props: Props) => {
+const Chat = (props: Props) => {
   const { user, mutateUser } = useUser();
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>();
-  const [rooms, setRooms] = useState<Array<Room>>([])
+  const [room, setRoom] = useState<Room>({ id: 0, name: '-' });
+  const [messages, setMessages] = useState<Array<Message>>([]);
+
+  const { roomId } = router.query;
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -36,7 +40,10 @@ const Home = (props: Props) => {
           body: JSON.stringify(body),
         });
 
-        setRooms(rooms);
+        if (!rooms.some(r => r.id === Number(roomId))) {
+          // ホーム画面へ遷移
+          router.push("/home");
+        }
 
       } catch (error) {
         if (error instanceof FetchError) {
@@ -47,12 +54,37 @@ const Home = (props: Props) => {
       }
     }
     fetchRooms();
+
+    const fetchRoom = async () => {
+      const body = {
+        ids: roomId,
+      };
+
+      try {
+        // トークルーム取得API呼出し
+        const rooms: Room[] = await fetchJson("/api/rooms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        setRoom(rooms[0]);
+
+      } catch (error) {
+        if (error instanceof FetchError) {
+          setErrorMessage(error.data.message);
+        } else {
+          console.error(`Unexpected exception occurred. -> error: ${String(error)}`);
+        }
+      }
+    }
+    fetchRoom();
   }, [])
 
   return (
     <>
       <Head>
-        <title>Home | Naisho Chat</title>
+        <title>{room?.name} | Naisho Chat</title>
       </Head>
       <div className="wrapper">
         {props.user?.isLoggedIn === false && (
@@ -96,20 +128,15 @@ const Home = (props: Props) => {
             </header>
           </>
         )}
-        <h2>トーク</h2>
+        <div>
+          <button type="button" className="previous" onClick={() => router.back()}>
+            ＜
+          </button>
+          <label className="room-title">{room?.name}</label>
+        </div>
         <div>
           <ul>
-            {
-              rooms.map((room, index) => {
-                return (
-                  <li key={index}>
-                    <Link href={{ pathname: "/chat", query: { roomId: room.id } }}>
-                      {room.name}
-                    </Link>
-                  </li>
-                )
-              })
-            }
+            <li>Room ID: {roomId}</li>
           </ul>
         </div>
         <style jsx>{`
@@ -118,6 +145,20 @@ const Home = (props: Props) => {
           }
           .logout-field {
             background-color: #d0d7de;
+          }
+          .previous {
+            border: none;
+            background-color: transparent;
+            width: 4em;
+            height: 4em;
+            font-size: 100%;
+            font-weight: bold;
+          }
+          .room-title {
+            font-size: x-large;
+            font-weight: bold;
+            color: #364e96;
+            vertical-align: middle;
           }
           h2 {
             padding-left: 0.5em;
@@ -159,11 +200,11 @@ const Home = (props: Props) => {
     </>
   );
 };
-export default Home;
+export default Chat;
 
 export const getServerSideProps: GetServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, res }) {
-    console.log('Home.getServerSideProps() called.');
+    console.log('Chat.getServerSideProps() called.');
 
     const user = req.session.user;
 
