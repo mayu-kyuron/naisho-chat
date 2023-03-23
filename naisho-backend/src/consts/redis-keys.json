@@ -8,5 +8,10 @@
         "prefix": "room:",
         "roomId": 0,
         "suffix": ":users"
+    },
+    "roomMessages": {
+        "prefix": "room:",
+        "roomId": 0,
+        "suffix": ":messages"
     }
 }

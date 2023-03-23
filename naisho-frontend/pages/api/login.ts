@@ -36,7 +36,7 @@ async function loginRoute(req: NextApiRequest, res: NextApiResponse) {
     */
 
     const ret: AxiosResponse<LoginInfo> = await axios.post(
-      `${process.env.BACKEND_BASE_URI}/auth/signin`,
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URI}/auth/signin`,
       params,
       {
         headers: {

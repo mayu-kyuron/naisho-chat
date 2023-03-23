@@ -16,7 +16,7 @@ async function userRoomsRoute(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const backRes: AxiosResponse<ResponseDto> = await axios.get(
-      `${process.env.BACKEND_BASE_URI}/rooms/user?id=${userId}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URI}/rooms/user?id=${userId}`,
       {
         headers: {
           Authorization: `Bearer ${req.session.user?.accessToken}`,

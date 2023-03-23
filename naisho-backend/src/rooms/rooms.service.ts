@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { RedisService } from '../redis/redis.service';
-import RedisKeys from '../entities/redis-keys.json';
+import RedisKeys from '../consts/redis-keys.json';
 import { Room } from '../entities/room.entity';
 import { CreateRoomDto } from './dto/create-room.dto';
 

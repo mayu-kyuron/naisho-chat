@@ -6,7 +6,9 @@ import { User } from '../entities/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { JwtWsStrategy } from './jwt-ws.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtWebsocketGuard } from './guards/jwt-websocket.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { JWT_SECRET_KEY, JWT_EXPIRES_IN } from '../config/app.config';
 
@@ -22,7 +24,7 @@ import { JWT_SECRET_KEY, JWT_EXPIRES_IN } from '../config/app.config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
-  exports: [JwtStrategy, JwtAuthGuard, RolesGuard],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, JwtWsStrategy, JwtWebsocketGuard],
+  exports: [JwtStrategy, JwtAuthGuard, RolesGuard, JwtWebsocketGuard],
 })
 export class AuthModule {}

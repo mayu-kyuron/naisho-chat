@@ -6,15 +6,24 @@ import Head from 'next/head';
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { withIronSessionSsr } from "iron-session/next";
+import io from 'socket.io-client';
 import { sessionOptions } from "../../lib/session";
 import fetchJson, { FetchError } from "../../lib/fetchJson";
 import useUser from "../../lib/useUser";
 import { User } from "../api/user";
 import { Room } from "../../entities/room.entity";
 import { Message } from "../../entities/message.entity";
+import { WebsocketOption } from "../websocket/dto/websocket-option.dto";
+import { DisplayMessagesDto } from "../api/dto/display-messages.dto";
+import { SendMessageDto } from "../api/dto/send-message.dto";
+import { SentMessageDto } from "../api/dto/sent-message.dto";
 
 type Props = {
   user?: User;
+};
+
+type SendMessageForm = {
+  body: string;
 };
 
 const Chat = (props: Props) => {
@@ -24,7 +33,29 @@ const Chat = (props: Props) => {
   const [room, setRoom] = useState<Room>({ id: 0, name: '-' });
   const [messages, setMessages] = useState<Array<Message>>([]);
 
+  const websocketOption: WebsocketOption = {
+    query: {
+      bearerToken: (props.user?.accessToken != null) ? props.user?.accessToken : '',
+    },
+  };
+  const [socket, _] = useState(() => io(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URI}/messages`, websocketOption));
+
   const { roomId } = router.query;
+
+  const sendMessageFormik = useFormik<SendMessageForm>({
+    initialValues: {
+      body: '',
+    },
+    validationSchema: Yup.object<SendMessageForm>({
+      body: Yup.string(),
+    }),
+    onSubmit: async (values: any, helpers) => {
+      // データ送信
+      sendMessage(values.body);
+
+      values.body = '';
+    },
+  });
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -79,7 +110,57 @@ const Chat = (props: Props) => {
       }
     }
     fetchRoom();
-  }, [])
+
+    socket.on('connect', () => { // Socket通信の接続開始
+      console.log('Socket connected. -> socket id: ', socket.id);
+
+      socket.emit('messagesDisplayed', {
+        roomId: Number(roomId),
+      } as DisplayMessagesDto);
+    }),
+    socket.on('allMessagesReceived', (data: SentMessageDto[]) => { // サーバから allMessagesReceived イベントを受け付ける
+      console.log(`allMessagesReceived called. -> messages: ${JSON.stringify(data)}`);
+
+      const newMessages = [];
+      for (let i = 0; i < data.length; i++) {
+        newMessages.push({
+          id: data[i].id,
+          username: data[i].username,
+          body: data[i].body,
+          createdAt: data[i].createdAt,
+        } as Message);
+      }
+
+      // 受信した全チャットメッセージを反映する
+      setMessages(newMessages);
+    });
+    socket.on('messageReceived', (data: SentMessageDto) => { // サーバから messageReceived イベントを受け付ける
+        console.log(`messageReceived called. -> name: ${data.username}, body: ${data.body}`);
+
+        const newMessages = [...messages];
+        newMessages.push({
+          id: data.id,
+          username: data.username,
+          body: data.body,
+          createdAt: data.createdAt,
+        } as Message);
+
+        // 受信したチャットメッセージを反映する
+        setMessages(newMessages);
+    });
+  }, [messages])
+
+  // messageSent イベントを受け付けているサーバにデータを送信する
+  const sendMessage = useCallback((body: string): void => {
+    console.log(`Message sent. -> socket id: ${socket.id}, body: ${body}`);
+
+    socket.emit('messageSent', {
+      roomId: Number(roomId),
+      userId: props.user?.userId,
+      username: props.user?.username,
+      body: body,
+    } as SendMessageDto);
+  }, []);
 
   return (
     <>
@@ -134,11 +215,38 @@ const Chat = (props: Props) => {
           </button>
           <label className="room-title">{room?.name}</label>
         </div>
-        <div>
-          <ul>
-            <li>Room ID: {roomId}</li>
-          </ul>
+        <div className="message-area">
+          <section className="message-scroll-area">
+            <ul>
+              {
+                messages.map((message, index) => {
+                  return (
+                    <li key={index} className={(message.username == props.user?.username) ? "message-left" : "message-right"}>
+                      <div>{message.username}</div>
+                      <div className="balloon">{message.body}</div>
+                      <div><label className="message-created-at"><small>{message.createdAt}</small></label></div>
+                    </li>
+                  )
+                })
+              }
+            </ul>
+          </section>
         </div>
+        <form onSubmit={sendMessageFormik.handleSubmit}>
+          <div className="send-message-area">
+            <input
+              id="body"
+              type="text"
+              name="body"
+              onChange={sendMessageFormik.handleChange}
+              onBlur={sendMessageFormik.handleBlur}
+              value={sendMessageFormik.values.body}
+            />
+            <button type="submit" disabled={sendMessageFormik.values.body === ''}>
+              送信
+            </button>
+          </div>
+        </form>
         <style jsx>{`
           .user-id {
             color: #FFFFFF;
@@ -160,40 +268,82 @@ const Chat = (props: Props) => {
             color: #364e96;
             vertical-align: middle;
           }
+          .message-area {
+            margin: 2% 2% 0;
+            background-color: rgba(30,130,80,0.3);
+          }
+          .message-scroll-area {
+            height: 66vh;
+            overflow: scroll;
+          }
+          .message-scroll-area ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+          }
+          .message-scroll-area ul .message-left {
+            margin: 0 auto 0px 0px;
+          }
+          .message-scroll-area ul .message-right {
+            margin: 0 4% 0px auto;
+          }
+          .message-scroll-area ul li .message-created-at {
+            float: right;
+          }
+          /* 吹き出し本体 */
+          .balloon{
+            position: relative;
+            margin: 8px 0 0;
+            padding: 4px;
+            background-color: #ffffff;
+            border: 2px solid #f7f9fb;
+          }
+          /* beforeで枠線の三角を表現 */
+          .balloon::before{
+            content: '';
+            position: absolute;
+            display: block;
+            width: 0;
+            height: 0;
+            left: 16px;
+            top: -10px;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #f7f9fb;
+            border-left: 10px solid transparent;
+          }
+          /* beforeで本体の三角を表現 */
+          .balloon::after{
+            content: '';
+            position: absolute;
+            display: block;
+            width: 0;
+            height: 0;
+            left: 16px;
+            top: -8px;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #ffffff;
+            border-left: 10px solid transparent;
+          }
+          .send-message-area {
+            margin: 1% 2% 0;
+          }
+          .send-message-area input {
+            width: 96.5%;
+          }
+          .send-message-area button {
+            margin: 0 0 0 0.5%;
+            border-color: #167BE2;
+            background-color: #167BE2;
+            color: #ffffff;
+          }
+          .send-message-area button:disabled {
+            border-color: #cccccc;
+            background-color: #cccccc;
+            color: #666666;
+          }
           h2 {
             padding-left: 0.5em;
             color: #364e96;
-          }
-          table {
-            table-layout: fixed;
-            width: 100%;
-          }
-          table,th,td {
-            border: 1px solid #bbb;
-          }
-          td {
-            padding: 0 8px;
-            overflow: hidden;
-          }
-          ul {
-            background: whitesmoke;
-            padding: 0 0.5em;
-            position: relative;
-          }
-          ul li {
-            line-height: 1.5;
-            padding: 0.5em 0 0.5em 1.5em;
-            border-bottom: 2px solid white;
-            list-style-type: none!important;
-          }
-          ul li:before {
-            content: "〇";/*アイコン種類*/
-            position: absolute;
-            left : 0.5em; /*左端からのアイコンまで*/
-            color: #668ad8; /*アイコン色*/
-          }
-          ul li:last-of-type {
-            border-bottom: none;/*最後の線だけ消す*/
           }
         `}</style>
       </div>

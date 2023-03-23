@@ -1,6 +1,6 @@
 {
     "id": "0,20230323165034,abcde12345",
-    "username": "sample-name",
+    "userId": 0,
     "body": "This is a sample message.",
-    "createdAt": "2023/03/23 16:50:34"
+    "createdAt": "2023-03-23 16:50:34"
 }

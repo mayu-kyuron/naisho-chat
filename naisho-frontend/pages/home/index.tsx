@@ -52,7 +52,7 @@ const Home = (props: Props) => {
   return (
     <>
       <Head>
-        <title>Home | Naisho Chat</title>
+        <title>チャット | Naisho Chat</title>
       </Head>
       <div className="wrapper">
         {props.user?.isLoggedIn === false && (
@@ -96,7 +96,7 @@ const Home = (props: Props) => {
             </header>
           </>
         )}
-        <h2>トーク</h2>
+        <h2>チャット</h2>
         <div>
           <ul>
             {

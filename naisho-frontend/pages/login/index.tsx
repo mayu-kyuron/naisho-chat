@@ -68,7 +68,7 @@ const Login = (props: Props) => {
   return (
     <>
       <Head>
-        <title>Login | Naisho Chat</title>
+        <title>ログイン | Naisho Chat</title>
       </Head>
       {props.user?.isLoggedIn === true && (
         <></>

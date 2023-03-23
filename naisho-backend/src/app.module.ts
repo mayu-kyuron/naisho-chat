@@ -3,9 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { AuthModule } from './auth/auth.module';
 import { RoomsModule } from './rooms/rooms.module';
+import { MessagesModule } from './messages/messages.module';
 import { DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_NAME } from './config/app.config';
 import { User } from './entities/user.entity';
 import { Room } from './entities/room.entity';
+import { Message } from './entities/message.entity';
 
 @Module({
   imports: [
@@ -21,10 +23,12 @@ import { Room } from './entities/room.entity';
       entities: [
         User,
         Room,
+        Message,
       ],
     }),
     AuthModule,
     RoomsModule,
+    MessagesModule,
   ],
   controllers: [],
   providers: [],

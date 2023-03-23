@@ -25,7 +25,7 @@ const Index = (props: Props) => {
   return (
     <>
       <Head>
-        <title>Top | Naisho Chat</title>
+        <title>TOP | Naisho Chat</title>
       </Head>
       {props.user?.isLoggedIn === true && (
         <></>
