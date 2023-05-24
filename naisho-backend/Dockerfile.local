@@ -1,0 +1,13 @@
+# ランタイムステージ開始
+FROM node:18-alpine AS runner
+
+# パッケージインストール
+RUN apk add --no-cache libc6-compat
+WORKDIR /backend
+COPY package*.json ./
+RUN npm install
+
+# アプリをコピーして起動
+COPY . .
+EXPOSE 3030
+CMD ["npm", "run","start:hmr"]

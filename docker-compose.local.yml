@@ -1,0 +1,67 @@
+version: '3'
+
+networks:
+  default:
+
+services:
+  database:
+    container_name: database
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    env_file:
+      - ./.env
+    ports:
+      - ${DATABASE_PORT}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+    volumes:
+      - database:/var/lib/mysql
+      - ./database/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./database/sql:/docker-entrypoint-initdb.d/
+    networks:
+      - default
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./naisho-frontend
+      dockerfile: ./Dockerfile.local
+    env_file:
+      - ./.env
+    ports:
+      - ${FRONTEND_PORT}:3000
+    stdin_open: true
+    tty: true
+    environment:
+      NEXT_PUBLIC_BACKEND_BASE_URI: http://backend:3030
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./naisho-frontend:/frontend
+      - /frontend/node_modules
+      - /frontend/.next
+    networks:
+      - default
+
+  backend:
+    container_name: backend
+    build:
+      context: ./naisho-backend
+      dockerfile: ./Dockerfile.local
+    env_file:
+      - ./.env
+    ports:
+      - ${BACKEND_PORT}:3030
+    stdin_open: true
+    tty: true
+    environment:
+      DATABASE_HOST: database
+    volumes:
+      - ./naisho-backend:/backend
+      - /backend/node_modules
+    depends_on:
+      - database
+    networks:
+      - default
+
+volumes:
+  database:

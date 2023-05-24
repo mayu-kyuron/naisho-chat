@@ -1,0 +1,46 @@
+# 基本とするNode.jsを設定
+FROM node:18-alpine AS base
+
+# 依存解決ステージ開始
+FROM base AS deps
+
+# パッケージインストール
+RUN apk add --no-cache libc6-compat
+WORKDIR /frontend
+COPY package*.json ./
+RUN rm -rf package-lock.json node_modules
+RUN npm install
+
+# ビルドステージ開始
+FROM base AS builder
+
+# アプリをコピーしてビルド
+WORKDIR /frontend
+ENV NEXT_TELEMETRY_DISABLED 1
+COPY . .
+COPY --from=deps /frontend/node_modules ./node_modules
+RUN rm -rf package-lock.json
+RUN npm install
+RUN npm run build \
+    && npm prune --production
+
+# ランタイムステージ開始
+FROM base AS runner
+
+# 環境設定
+WORKDIR /frontend
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# ビルドステージのイメージから、実行に必要なバイナリのみコピー
+COPY --from=builder /frontend/.next/standalone ./
+COPY --from=builder /frontend/.next/static ./.next/static
+COPY --from=builder /frontend/public public
+COPY --from=builder /frontend/next.config.js ./
+COPY --from=builder /frontend/package*.json ./
+COPY --from=builder /frontend/.env.production ./
+
+# アプリを起動
+EXPOSE 80
+ENV PORT 80
+CMD ["node", "server.js"]

@@ -1,0 +1,16 @@
+# ランタイムステージ開始
+FROM node:18-alpine AS runner
+
+# パッケージインストール
+RUN apk add --no-cache libc6-compat
+RUN mkdir -p /frontend
+WORKDIR /frontend
+COPY package*.json ./
+RUN rm -rf package-lock.json node_modules
+RUN npm cache clean --force
+RUN npm install
+
+# アプリをコピーして起動
+COPY . .
+EXPOSE 3000
+CMD [ "npm", "run", "dev" ]

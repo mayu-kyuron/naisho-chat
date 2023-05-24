@@ -10,16 +10,15 @@ import { JwtWsStrategy } from './jwt-ws.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtWebsocketGuard } from './guards/jwt-websocket.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { JWT_SECRET_KEY, JWT_EXPIRES_IN } from '../config/app.config';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: JWT_SECRET_KEY ?? '',
+      secret: process.env.JWT_SECRET_KEY,
       signOptions: {
-        expiresIn: JWT_EXPIRES_IN ?? 3600,
+        expiresIn: process.env.JWT_EXPIRES_IN,
       },
     }),
   ],

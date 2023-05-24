@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+README.md
+LICENSE
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*
+.env
+
+# Visual Studio Code
+.vscode
+
+# Next.js
+.next
+node_modules
+npm-debug.log
+
+# Database
+database/

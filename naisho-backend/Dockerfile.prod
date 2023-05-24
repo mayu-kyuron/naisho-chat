@@ -1,0 +1,43 @@
+# 基本とするNode.jsを設定
+FROM node:18-alpine AS base
+
+# 依存解決ステージ開始
+FROM base AS deps
+
+# パッケージインストール
+RUN apk add --no-cache libc6-compat
+WORKDIR /backend
+COPY package*.json ./
+RUN rm -rf package-lock.json node_modules
+RUN npm install
+
+# ビルドステージ開始
+FROM base AS builder
+
+# アプリをコピーしてビルド
+ENV NODE_ENV build
+WORKDIR /backend
+COPY . .
+COPY --from=deps /backend/node_modules ./node_modules
+RUN rm -rf package-lock.json
+RUN npm install
+RUN npm run build \
+    && npm prune --production
+
+# ランタイムステージ開始
+FROM base AS runner
+
+# 環境設定
+WORKDIR /backend
+ENV NODE_ENV production
+
+# ビルドステージのイメージから、実行に必要なバイナリのみコピー
+COPY --from=builder /backend/dist/ ./dist/
+COPY --from=builder /backend/node_modules/ ./node_modules/
+COPY --from=builder /backend/package*.json ./
+COPY --from=builder /backend/.env.production ./
+
+# アプリを起動
+EXPOSE 80
+ENV PORT 80
+CMD ["node", "dist/main.js"]

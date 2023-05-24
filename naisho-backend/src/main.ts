@@ -1,14 +1,22 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { config } from "dotenv"
 import { AppModule } from './app.module';
-import { HTTP_PORT } from './config/app.config';
+
+declare const module: any;
 
 async function bootstrap() {
-  config();
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
-  await app.listen(HTTP_PORT ?? 3000);
+
+  await app.listen(process.env.HTTP_PORT).then((_value) => {
+    console.log(`NestJS app starts. -> url: ${process.env.HTTP_HOST}:${process.env.HTTP_PORT}`);
+  });
+
+  // ホットリロードを有効化
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
 }
 bootstrap();

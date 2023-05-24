@@ -1,0 +1,27 @@
+# Git
+.git
+.gitignore
+README.md
+LICENSE
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*
+.env
+
+# Visual Studio Code
+.vscode
+
+# NestJS
+dist
+node_modules
+coverage
+.editorconfig
+.eslintrc.js
+.prettierrc
+tslint.json
+nodemon.json
+
+# Database
+database/

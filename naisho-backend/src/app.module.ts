@@ -1,24 +1,28 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { AuthModule } from './auth/auth.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { MessagesModule } from './messages/messages.module';
-import { DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_NAME } from './config/app.config';
 import { User } from './entities/user.entity';
 import { Room } from './entities/room.entity';
 import { Message } from './entities/message.entity';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV}`,
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: DB_HOST ?? '',
-      port: Number(DB_PORT) ?? 0,
-      username: DB_USERNAME ?? '',
-      password: DB_PASSWORD ?? '',
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      username: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
       synchronize: false,
-      database: DB_NAME ?? '',
+      database: process.env.DATABASE_NAME,
       //logging: true,
       entities: [
         User,
