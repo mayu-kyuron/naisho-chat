@@ -19,7 +19,10 @@ type RedisCommandType = typeof RedisCommandType[keyof typeof RedisCommandType];
 @Injectable()
 export class RedisService {
   private readonly logger = new Logger(RedisService.name);
-  private readonly redis = new Redis();
+  private readonly redis = new Redis({
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+  });
 
   /**
    * Redisにキーと値を設定する。

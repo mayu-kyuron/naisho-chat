@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { RedisModule } from 'src/redis/redis.module';
@@ -9,11 +9,14 @@ import { Room } from 'src/entities/room.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Room]),
-    AuthModule,
+    forwardRef(() => AuthModule),
     RedisModule,
   ],
   controllers: [RoomsController],
   providers: [
+    RoomsService,
+  ],
+  exports: [
     RoomsService,
   ],
 })

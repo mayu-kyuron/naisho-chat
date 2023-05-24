@@ -14,7 +14,7 @@ export class JwtWsStrategy extends PassportStrategy(Strategy, 'jwtWs') {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromUrlQueryParameter('bearerToken'),
-      secretOrKey: process.env.JWT_SECRET_KEY,
+      secretOrKey: process.env.JWT_SECRET_KEY ?? 'secretKey123',
     });
   }
 

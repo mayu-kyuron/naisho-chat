@@ -42,6 +42,7 @@
     "webpack": "^5.76.2"
   },
   "overrides": {
-    "glob-parent": "6.0.2"
+    "glob-parent": "6.0.2",
+    "socket.io-parser": "4.2.3"
   }
 }

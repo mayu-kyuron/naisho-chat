@@ -23,6 +23,9 @@ export class RoomsService {
     });
     await this.roomRepository.save(room);
 
+    const userRoomsKey: string = RedisKeys.userRooms.prefix + createdBy + RedisKeys.userRooms.suffix;
+    await this.redisService.setMembers(userRoomsKey, [room.id]);
+
     return room;
   }
 

@@ -6,23 +6,31 @@
 
 ### 準備
 
-- MySQLをインストールすること。  
-- Redisをインストールすること。
+- Dockerをインストールすること。  
+- docker-composeをインストールすること。
 
-### 起動方法
+### 設定
 
 バックエンド（NestJS）
 ```bash
-$ service mysqld start
-$ service redis-server start
 $ cd /{任意のディレクトリ}/naisho-chat/naisho-backend
-$ npm run start
+$ cp .env.development.example .env.development
+$ npm install
 ```
 
 フロントエンド（Next.js）
 ```bash
 $ cd /{任意のディレクトリ}/naisho-chat/naisho-frontend
-$ npm run dev
+$ cp .env.development.example .env.development
+$ npm install
+```
+
+### 起動方法
+
+```bash
+$ cd /{任意のディレクトリ}/naisho-chat
+$ docker-compose -f docker-compose.local.yml build
+$ docker-compose -f docker-compose.local.yml up
 ```
 
 →　デフォルト環境設定の場合、http://localhost:3000/ でアクセスできます。

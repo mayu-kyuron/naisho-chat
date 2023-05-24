@@ -5,7 +5,7 @@ networks:
 
 services:
   database:
-    container_name: database
+    container_name: naisho_database
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
     env_file:
@@ -21,8 +21,20 @@ services:
     networks:
       - default
 
+  redis:
+    container_name: naisho_redis
+    image: redis
+    env_file:
+      - ./.env
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - redis:/data
+    networks:
+      - default
+
   frontend:
-    container_name: frontend
+    container_name: naisho_frontend
     build:
       context: ./naisho-frontend
       dockerfile: ./Dockerfile.local
@@ -43,7 +55,7 @@ services:
       - default
 
   backend:
-    container_name: backend
+    container_name: naisho_backend
     build:
       context: ./naisho-backend
       dockerfile: ./Dockerfile.local
@@ -55,13 +67,16 @@ services:
     tty: true
     environment:
       DATABASE_HOST: database
+      REDIS_HOST: redis
     volumes:
       - ./naisho-backend:/backend
       - /backend/node_modules
     depends_on:
       - database
+      - redis
     networks:
       - default
 
 volumes:
   database:
+  redis:
