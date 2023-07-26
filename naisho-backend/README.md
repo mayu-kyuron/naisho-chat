@@ -1,73 +1,179 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+## 概要
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJSによるバックエンドアプリです。
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## ローカル実行
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
+### 起動方法
 
 ```bash
-$ npm install
-```
-
-## Running the app
-
-```bash
-# development
+# 開発モード
 $ npm run start
 
-# watch mode
+# watchモード
 $ npm run start:dev
 
-# production mode
+# 本番モード
 $ npm run start:prod
 ```
 
-## Test
-
+### テスト
+    
+Jest    
 ```bash
-# unit tests
 $ npm run test
 
-# e2e tests
+# watchモード
+$ npm run test:watch
+```
+
+参考）<br>
+https://jestjs.io/ja/
+<br>
+<br>
+ 
+公式
+```bash
+# 単体テスト
+$ npm run test
+
+# e2eテスト
 $ npm run test:e2e
 
-# test coverage
+# テストカバレッジ
 $ npm run test:cov
 ```
 
-## Support
+## 新規作成
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### インストール
+    
+```bash
+$ npm i -g @nestjs/cli
+$ nest -v
+```
 
-## Stay in touch
+### プロジェクト作成
+    
+```bash
+$ nest new project-name
+```
+    
+※以下のソースは削除
+- src/app.controller.spec.ts
+- src/app.service.ts
+- （src/app.module.ts の中の、上記のimportと記述を削除）
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### module/controller/service作成
 
-## License
+```basic
+$ nest g module <module_name>
 
-Nest is [MIT licensed](LICENSE).
+$ nest g controller <controller_name>
+
+# testファイルなしの場合 --no-spec をつける
+$ nest g service <service_name> --no-spec
+```
+
+### パッケージインストール
+
+- class-validation
+```bash
+$ npm install --save uuid
+$ npm install --save class-validator class-transformer
+```
+
+参考）<br>
+https://github.com/typestack/class-validator
+<br>
+
+- データベース
+    
+```bash
+$ npm install --save @nestjs/typeorm typeorm mysql2
+```
+
+- migration
+
+  - 事前準備
+  
+  ```bash
+  $ npm install ts-node --save-dev
+  ```
+  
+  - package.json - scripts　に以下追加（src直下に、ormconfig.ts を作成した場合）
+  
+  ```json
+  "scripts": {
+      ...
+      "typeorm": "typeorm-ts-node-commonjs -d ./src/ormconfig.ts"
+    },
+  ```
+  
+  - src/ormconfig.ts の設定
+  
+  ```tsx
+  import { DataSource } from 'typeorm';
+  
+  const source = new DataSource({
+    type: 'mysql',
+    host: '127.0.0.1',
+    port: 3306,
+    username: 'root',
+    password: 'root',
+    database: 'nestjs_test',
+    synchronize: true,
+    entities: ['src/entities/*.entity.ts'],
+    migrations: ['dist/migration/*.js'],
+  });
+  
+  export default source;
+  ```
+  
+  - migration実行
+  
+  ```bash
+  $ npm run typeorm migration:generate ./src/migration/test
+  # src/migration/xxxx-test.ts が作成される
+  
+  # nestjs を実行して、dist/migration/**.js へコンパイルするため
+  $ npm run start:dev
+  
+  $ npm run typeorm -- migration:run
+  ```
+
+- パスワードのhash化
+
+```bash
+$ npm install --save bcrypt
+
+# 型定義のインストール
+$ npm install --save-dev @types/bcrypt
+```
+
+- JWT
+
+```bash
+$ npm install --save @nestjs/jwt @nestjs/passport passport passport-jwt
+
+# 型定義のインストール
+$ npm install --save-dev @types/passport-jwt
+```
+
+- eslintとprettierの共存
+
+  - 設定
+
+  ```json
+  "scripts": {
+      ...
+      "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix && prettier --write \"{src,apps,libs,test}/**/*.ts\"",
+      ...
+    },
+  ```
+
+  - 実行
+
+  ```bash
+  $ npm run lint
+  ```
